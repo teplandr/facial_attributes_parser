@@ -4,7 +4,7 @@ import torch
 import segmentation_models_pytorch as smp
 from torch.utils.data import DataLoader
 
-from dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
+from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
 
 
 def main():
