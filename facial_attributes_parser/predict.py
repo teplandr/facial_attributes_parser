@@ -13,11 +13,11 @@ def main():
     encoder_weights = 'imagenet'
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder_name, encoder_weights)
 
-    model = torch.load('../checkpoints/best_model.pth')
+    model = torch.load('checkpoints/best_model.pth', map_location=torch.device('cpu'))
 
     dataset = CelebAMaskHQDataset(
-        Path('../data/CelebAMask-HQ'),
-        (.1, .1002),
+        Path('data/CelebAMask-HQ'),
+        (.9, .9002),
         transform=inference_transform,
         preprocessing=get_preprocessing(preprocessing_fn)
     )
