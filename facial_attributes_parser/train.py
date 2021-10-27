@@ -27,7 +27,7 @@ def main():
         classes=19,
         activation="softmax2d"
     )
-    loss = smp.utils.losses.CrossEntropyLoss()
+    loss = smp.losses.DiceLoss('multiclass', from_logits=False)
     metrics = []
     optimizer = torch.optim.Adam(params=model.parameters(), lr=hparams["lr"])
 

@@ -2,6 +2,7 @@ from pathlib import Path
 
 import cv2
 import torch
+import numpy as np
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
@@ -31,8 +32,8 @@ def main():
         y_pred = y_pred.squeeze().cpu().detach().numpy()
 
         cv2.imshow('x', x)
-        for i in range(18):
-            cv2.imshow('y_true', y_true[i])
+        for i in range(19):
+            cv2.imshow('y_true', np.where(y_true == i, 255, 0).astype(np.uint8))
             cv2.imshow('y_pred', y_pred[i])
             cv2.waitKey()
 
