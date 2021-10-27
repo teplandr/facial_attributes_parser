@@ -27,7 +27,7 @@ def main():
         classes=18,
         activation="softmax2d"
     )
-    loss = smp.utils.losses.DiceLoss(eps=1e-7)
+    loss = smp.utils.losses.JaccardLoss(eps=1e-7)
     metrics = [smp.utils.metrics.IoU(threshold=0.5)]
     optimizer = torch.optim.Adam(params=model.parameters(), lr=hparams["lr"])
 
