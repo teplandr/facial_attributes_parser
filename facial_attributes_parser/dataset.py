@@ -31,7 +31,7 @@ def inference_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np
     # temp
     image = cv2.resize(image, (512, 512))
 
-    shape = 18, *masks[1].shape
+    shape = 18, *masks[0].shape
     result_mask = np.zeros(shape, dtype=np.float32)
     for cls_index, mask in masks.items():
         result_mask[cls_index][mask == 255] = 1
