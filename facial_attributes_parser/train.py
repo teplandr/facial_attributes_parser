@@ -24,7 +24,7 @@ def main():
     model = smp.DeepLabV3Plus(
         encoder_name=encoder_name,
         encoder_weights=encoder_weights,
-        classes=18,
+        classes=19,
         activation="softmax2d"
     )
     loss = smp.utils.losses.CrossEntropyLoss()
