@@ -9,7 +9,7 @@ import albumentations as albu
 from torch.utils.data import Dataset
 
 
-COLORS = [(204, 0, 0), (76, 153, 0), (204, 204, 0),
+COLORS = [(0, 0, 0), (204, 0, 0), (76, 153, 0), (204, 204, 0),
           (51, 51, 255), (204, 0, 204), (0, 255, 255),
           (255, 204, 204), (102, 51, 0), (255, 0, 0),
           (102, 204, 0), (255, 255, 0), (0, 0, 153),
@@ -18,7 +18,7 @@ COLORS = [(204, 0, 0), (76, 153, 0), (204, 204, 0),
 
 
 def visualization_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np.array, np.array]:
-    shape = *masks[0].shape, 3
+    shape = *masks[1].shape, 3
     result_mask = np.zeros(shape, dtype=np.uint8)
     for cls_index, mask in masks.items():
         result_mask[mask == 255] = COLORS[cls_index]
@@ -31,14 +31,14 @@ def inference_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np
     # temp
     image = cv2.resize(image, (512, 512))
 
-    shape = 18, *masks[0].shape
-    result_mask = np.zeros(shape, dtype=np.float32)
-    for cls_index, mask in masks.items():
-        result_mask[cls_index][mask == 255] = 1
-
-    # result_mask = np.zeros(masks[1].shape, dtype=np.long)
+    # shape = 18, *masks[0].shape
+    # result_mask = np.zeros(shape, dtype=np.float32)
     # for cls_index, mask in masks.items():
-    #     result_mask[mask == 255] = cls_index
+    #     result_mask[cls_index][mask == 255] = 1
+
+    result_mask = np.zeros(masks[1].shape, dtype=np.long)
+    for cls_index, mask in masks.items():
+        result_mask[mask == 255] = cls_index
 
     return image, result_mask
 
@@ -89,7 +89,7 @@ class CelebAMaskHQDataset(Dataset):
         for image_path in self.image_paths:
             image_index = int(Path(image_path).stem)
             current_masks = dict()
-            for cls_index, cls in enumerate(self.CLASSES):
+            for cls_index, cls in enumerate(self.CLASSES, start=1):
                 mask_path = f'{root_path}/CelebAMask-HQ-mask-anno/{image_index // self.SAMPLES_PER_DIR}/' \
                             f'{image_index:05}_{cls}.png'
                 if os.path.exists(mask_path):
