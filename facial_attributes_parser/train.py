@@ -74,16 +74,16 @@ def main():
 
     checkpoint_path = Path(hparams["checkpoint_path"])
     checkpoint_path.parent.mkdir(exist_ok=True, parents=True)
-    max_score = 0.
+    # max_score = 0.
     for i in range(hparams["num_epochs"]):
         print(f"\nEpoch: {i}")
         train_logs = train_epoch.run(train_loader)
         valid_logs = valid_epoch.run(valid_loader)
 
-        if max_score < valid_logs["iou_score"]:
-            max_score = valid_logs["iou_score"]
-            torch.save(model, checkpoint_path)
-            print("Model saved!")
+        # if max_score < valid_logs["iou_score"]:
+        #     max_score = valid_logs["iou_score"]
+        torch.save(model, checkpoint_path)
+        print("Model saved!")
 
 
 if __name__ == "__main__":
