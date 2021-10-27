@@ -82,8 +82,8 @@ def main():
 
         # if max_score < valid_logs["iou_score"]:
         #     max_score = valid_logs["iou_score"]
-        torch.save(model, checkpoint_path)
-        print("Model saved!")
+    torch.save(model, checkpoint_path)
+    print("Model saved!")
 
 
 if __name__ == "__main__":
