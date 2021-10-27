@@ -28,7 +28,7 @@ def main():
         activation="softmax2d"
     )
     loss = smp.utils.losses.CrossEntropyLoss()
-    metrics = [smp.utils.metrics.IoU(threshold=0.5)]
+    metrics = []
     optimizer = torch.optim.Adam(params=model.parameters(), lr=hparams["lr"])
 
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder_name, encoder_weights)
