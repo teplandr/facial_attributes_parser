@@ -1,5 +1,7 @@
+import argparse
 from pathlib import Path
 
+import yaml
 import torch
 import segmentation_models_pytorch as smp
 from torch.utils.data import DataLoader
@@ -8,37 +10,50 @@ from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_tran
 
 
 def main():
-    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    encoder_name = 'resnet34'
-    encoder_weights = 'imagenet'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config_path", type=Path, help="Path to the config.", required=True)
+    args = parser.parse_args()
+
+    with open(args.config_path) as f:
+        hparams = yaml.load(f, Loader=yaml.SafeLoader)
+
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    encoder_name = "resnet34"
+    encoder_weights = "imagenet"
 
     model = smp.DeepLabV3Plus(
         encoder_name=encoder_name,
         encoder_weights=encoder_weights,
         classes=19,
-        activation='softmax2d'
+        activation="softmax2d"
     )
     loss = smp.utils.losses.DiceLoss(eps=1e-7)
     metrics = [smp.utils.metrics.IoU(threshold=0.5)]
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=3e-4)
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=hparams["lr"])
 
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder_name, encoder_weights)
 
     train_dataset = CelebAMaskHQDataset(
-        Path('../data/CelebAMask-HQ'),
-        (.0, .0002),
+        Path(hparams["dataset_root_path"]),
+        hparams["train_interval"],
         transform=inference_transform,
         preprocessing=get_preprocessing(preprocessing_fn)
     )
     valid_dataset = CelebAMaskHQDataset(
-        Path('../data/CelebAMask-HQ'),
-        (.1, .1002),
+        Path(hparams["dataset_root_path"]),
+        hparams["valid_interval"],
         transform=inference_transform,
         preprocessing=get_preprocessing(preprocessing_fn)
     )
 
-    train_loader = DataLoader(train_dataset, batch_size=2, shuffle=False, num_workers=1)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=1)
+    train_loader = DataLoader(train_dataset,
+                              batch_size=hparams["batch_size"],
+                              shuffle=False,
+                              num_workers=hparams["num_workers"])
+    valid_loader = DataLoader(valid_dataset,
+                              batch_size=hparams["batch_size"],
+                              shuffle=False,
+                              num_workers=hparams["num_workers"])
 
     train_epoch = smp.utils.train.TrainEpoch(
         model,
@@ -57,17 +72,20 @@ def main():
         verbose=True,
     )
 
-    max_score = 0
-    for i in range(40):
-        print(f'\nEpoch: {i}')
+    checkpoint_path = Path(hparams["checkpoint_path"])
+    checkpoint_path.parent.mkdir(exist_ok=True, parents=True)
+    max_score = 0.
+    for i in range(hparams["num_epochs"]):
+        print(f"\nEpoch: {i}")
         train_logs = train_epoch.run(train_loader)
         valid_logs = valid_epoch.run(valid_loader)
 
-        if max_score < valid_logs['iou_score']:
-            max_score = valid_logs['iou_score']
-            torch.save(model, '../checkpoints/best_model.pth')
-            print('Model saved!')
+        if max_score < valid_logs["iou_score"]:
+            max_score = valid_logs["iou_score"]
+            torch.save(model, checkpoint_path)
+            print("Model saved!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
+

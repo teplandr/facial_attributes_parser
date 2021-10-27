@@ -1,0 +1,12 @@
+dataset_root_path: data/CelebAMask-HQ
+
+train_interval: [.0, .8]
+valid_interval: [.8, .9]
+
+batch_size: 8
+num_workers: 8
+
+lr: 0.0003
+num_epochs: 20
+
+checkpoint_path: checkpoints/best_model.pth
