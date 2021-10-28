@@ -18,7 +18,7 @@ COLORS = [(0, 0, 0), (204, 0, 0), (76, 153, 0), (204, 204, 0),
 
 
 def visualization_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np.array, np.array]:
-    shape = *masks[1].shape, 3
+    shape = 512, 512, 3
     result_mask = np.zeros(shape, dtype=np.uint8)
     for cls_index, mask in masks.items():
         result_mask[mask == 255] = COLORS[cls_index]
@@ -31,12 +31,14 @@ def inference_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np
     # temp
     image = cv2.resize(image, (512, 512))
 
+    # one-hot target
     # shape = 18, *masks[0].shape
     # result_mask = np.zeros(shape, dtype=np.float32)
     # for cls_index, mask in masks.items():
     #     result_mask[cls_index][mask == 255] = 1
 
-    result_mask = np.zeros(masks[1].shape, dtype=np.long)
+    # indices target (one-hotted in loss and metrics functions)
+    result_mask = np.zeros((512, 512), dtype=np.long)
     for cls_index, mask in masks.items():
         result_mask[mask == 255] = cls_index
 
