@@ -7,6 +7,7 @@ import segmentation_models_pytorch as smp
 from torch.utils.data import DataLoader
 
 from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
+from facial_attributes_parser.train_utilities import TrainEpoch, ValidEpoch
 
 
 def main():
@@ -55,7 +56,7 @@ def main():
                               shuffle=False,
                               num_workers=hparams["num_workers"])
 
-    train_epoch = smp.utils.train.TrainEpoch(
+    train_epoch = TrainEpoch(
         model,
         loss=loss,
         metrics=metrics,
@@ -64,7 +65,7 @@ def main():
         verbose=True,
     )
 
-    valid_epoch = smp.utils.train.ValidEpoch(
+    valid_epoch = ValidEpoch(
         model,
         loss=loss,
         metrics=metrics,
