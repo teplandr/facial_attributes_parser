@@ -6,7 +6,10 @@ import torch
 import segmentation_models_pytorch as smp
 from torch.utils.data import DataLoader
 
-from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
+from facial_attributes_parser.dataset import CelebAMaskHQDataset
+from facial_attributes_parser.transforms import (
+    inference_transform, get_preprocessing, get_train_augmentations, get_valid_augmentations
+)
 from facial_attributes_parser.train_utilities import TrainEpoch, ValidEpoch
 
 
@@ -38,13 +41,15 @@ def main():
         Path(hparams["dataset_root_path"]),
         hparams["train_interval"],
         transform=inference_transform,
-        preprocessing=get_preprocessing(preprocessing_fn)
+        preprocessing=get_preprocessing(preprocessing_fn),
+        augmentation=get_train_augmentations()
     )
     valid_dataset = CelebAMaskHQDataset(
         Path(hparams["dataset_root_path"]),
         hparams["valid_interval"],
         transform=inference_transform,
-        preprocessing=get_preprocessing(preprocessing_fn)
+        preprocessing=get_preprocessing(preprocessing_fn),
+        augmentation=get_valid_augmentations()
     )
 
     train_loader = DataLoader(train_dataset,

@@ -1,56 +1,13 @@
 import os
 from glob import glob
 from pathlib import Path
-from typing import Dict, Tuple, Callable
+from typing import Tuple, Callable
 
 import cv2
-import numpy as np
-import albumentations as albu
 from torch.utils.data import Dataset
 
 
-def visualization_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np.array, np.array]:
-    shape = 512, 512, 3
-    result_mask = np.zeros(shape, dtype=np.uint8)
-    for cls_index, mask in masks.items():
-        result_mask[mask == 255] = CelebAMaskHQDataset.COLORS[cls_index]
-    image = cv2.resize(image, result_mask.shape[:2])
-    return image, result_mask
-
-
-def inference_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np.array, np.array]:
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # temp
-    image = cv2.resize(image, (512, 512))
-
-    # one-hot target
-    # shape = 18, *masks[0].shape
-    # result_mask = np.zeros(shape, dtype=np.float32)
-    # for cls_index, mask in masks.items():
-    #     result_mask[cls_index][mask == 255] = 1
-
-    # indices target (one-hotted in loss and metrics functions)
-    result_mask = np.zeros((512, 512), dtype=np.long)
-    for cls_index, mask in masks.items():
-        result_mask[mask == 255] = cls_index
-
-    return image, result_mask
-
-
-def to_tensor(x, **kwargs):
-    return x.transpose(2, 0, 1).astype(np.float32)
-
-
-def get_preprocessing(preprocessing_fn):
-    transform = [
-        albu.Lambda(image=preprocessing_fn),
-        albu.Lambda(image=to_tensor),
-    ]
-    return albu.Compose(transform)
-
-
 class CelebAMaskHQDataset(Dataset):
-
     COLORS = [(0, 0, 0), (204, 0, 0), (76, 153, 0), (204, 204, 0),
               (51, 51, 255), (204, 0, 204), (0, 255, 255),
               (255, 204, 204), (102, 51, 0), (255, 0, 0),
@@ -67,8 +24,8 @@ class CelebAMaskHQDataset(Dataset):
             root_path: Path,
             interval: Tuple[float, float],
             transform: Callable,
-            augmentation=None,
-            preprocessing=None
+            augmentation: Callable = None,
+            preprocessing: Callable = None
     ) -> None:
         self.transform = transform
         self.augmentation = augmentation

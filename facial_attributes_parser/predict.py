@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List
 from pathlib import Path
 
 import cv2
@@ -7,18 +7,19 @@ import numpy as np
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
-from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
+from facial_attributes_parser.dataset import CelebAMaskHQDataset
+from facial_attributes_parser.transforms import inference_transform, get_preprocessing, get_valid_augmentations
 
 
 def prepare_image(image: torch.Tensor, mean: List[float], std: List[float]) -> np.array:
-    # RGB -> BGR for OpenCV
-    channels_order = [2, 1, 0]
-    image = image[channels_order, :, :]
-
     std = torch.tensor(std).reshape(3, 1, 1)
     mean = torch.tensor(mean).reshape(3, 1, 1)
     image.mul_(std)
     image.add_(mean)
+
+    # RGB -> BGR for OpenCV
+    channels_order = [2, 1, 0]
+    image = image[channels_order, :, :]
     # CHW -> HWC
     image = image.permute(1, 2, 0)
     return image.cpu().detach().numpy()
@@ -48,7 +49,8 @@ def main():
         Path('../data/CelebAMask-HQ'),
         (.9, .9002),
         transform=inference_transform,
-        preprocessing=get_preprocessing(preprocessing_fn)
+        preprocessing=get_preprocessing(preprocessing_fn),
+        augmentation=get_valid_augmentations()
     )
     loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
 
