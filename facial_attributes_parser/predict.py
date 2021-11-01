@@ -7,7 +7,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
-from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing, COLORS
+from facial_attributes_parser.dataset import CelebAMaskHQDataset, inference_transform, get_preprocessing
 
 
 def prepare_image(image: torch.Tensor, mean: List[float], std: List[float]) -> np.array:
@@ -29,7 +29,7 @@ def prepare_mask(mask: torch.Tensor) -> np.array:
 
     shape = *mask.shape, 3
     result_mask = np.zeros(shape, dtype=np.uint8)
-    for cls_index, color in enumerate(COLORS):
+    for cls_index, color in enumerate(CelebAMaskHQDataset.COLORS):
         result_mask[mask == cls_index] = color
     return result_mask
 

@@ -9,19 +9,11 @@ import albumentations as albu
 from torch.utils.data import Dataset
 
 
-COLORS = [(0, 0, 0), (204, 0, 0), (76, 153, 0), (204, 204, 0),
-          (51, 51, 255), (204, 0, 204), (0, 255, 255),
-          (255, 204, 204), (102, 51, 0), (255, 0, 0),
-          (102, 204, 0), (255, 255, 0), (0, 0, 153),
-          (0, 0, 204), (255, 51, 153), (0, 204, 204),
-          (0, 51, 0), (255, 153, 51), (0, 204, 0)]
-
-
 def visualization_transform(image: np.array, masks: Dict[int, np.array]) -> Tuple[np.array, np.array]:
     shape = 512, 512, 3
     result_mask = np.zeros(shape, dtype=np.uint8)
     for cls_index, mask in masks.items():
-        result_mask[mask == 255] = COLORS[cls_index]
+        result_mask[mask == 255] = CelebAMaskHQDataset.COLORS[cls_index]
     image = cv2.resize(image, result_mask.shape[:2])
     return image, result_mask
 
@@ -59,6 +51,12 @@ def get_preprocessing(preprocessing_fn):
 
 class CelebAMaskHQDataset(Dataset):
 
+    COLORS = [(0, 0, 0), (204, 0, 0), (76, 153, 0), (204, 204, 0),
+              (51, 51, 255), (204, 0, 204), (0, 255, 255),
+              (255, 204, 204), (102, 51, 0), (255, 0, 0),
+              (102, 204, 0), (255, 255, 0), (0, 0, 153),
+              (0, 0, 204), (255, 51, 153), (0, 204, 204),
+              (0, 51, 0), (255, 153, 51), (0, 204, 0)]
     CLASSES = ['skin', 'l_brow', 'r_brow', 'l_eye', 'r_eye', 'eye_g',
                'l_ear', 'r_ear', 'ear_r', 'nose', 'mouth', 'u_lip',
                'l_lip', 'neck', 'neck_l', 'cloth', 'hair', 'hat']
