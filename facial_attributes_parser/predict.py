@@ -1,9 +1,10 @@
+import argparse
 from typing import List
 from pathlib import Path
 
-import cv2
 import torch
 import numpy as np
+import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 
@@ -16,10 +17,6 @@ def prepare_image(image: torch.Tensor, mean: List[float], std: List[float]) -> n
     mean = torch.tensor(mean).reshape(3, 1, 1)
     image.mul_(std)
     image.add_(mean)
-
-    # RGB -> BGR for OpenCV
-    channels_order = [2, 1, 0]
-    image = image[channels_order, :, :]
     # CHW -> HWC
     image = image.permute(1, 2, 0)
     return image.cpu().detach().numpy()
@@ -36,18 +33,25 @@ def prepare_mask(mask: torch.Tensor) -> np.array:
 
 
 def main():
-    encoder_name = 'resnet34'
-    encoder_weights = 'imagenet'
-    preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder_name, encoder_weights)
-    params = smp.encoders.get_preprocessing_params(encoder_name, encoder_weights)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--encoder_name", type=str, help="Name of the SMP encoder.", required=True)
+    parser.add_argument("--encoder_weights", type=str, help="Name of the SMP encoder weights.", required=True)
+    parser.add_argument("--model_path", type=Path, help="Path to the pretrained model.", required=True)
+    parser.add_argument("--data_root_path", type=Path, help="Path to the CelebAMask-HQ root.", required=True)
+    parser.add_argument("--subset_range", type=tuple, help="Range of samples to process.", default=(0.9999, 1.0))
+    args = parser.parse_args()
+
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    preprocessing_fn = smp.encoders.get_preprocessing_fn(args.encoder_name, args.encoder_weights)
+    params = smp.encoders.get_preprocessing_params(args.encoder_name, args.encoder_weights)
     mean = params["mean"]
     std = params["std"]
 
-    model = torch.load('../checkpoints/best_model.pth', map_location=torch.device('cpu'))
+    model = torch.load(args.model_path, map_location=device)
 
     dataset = CelebAMaskHQDataset(
-        Path('../data/CelebAMask-HQ'),
-        (.9, .9002),
+        args.data_root_path,
+        args.subset_range,
         transform=inference_transform,
         preprocessing=get_preprocessing(preprocessing_fn),
         augmentation=get_valid_augmentations()
@@ -56,16 +60,31 @@ def main():
 
     for x, y_true in loader:
         y_pred = model.predict(x)
-        _, indices = y_pred.squeeze().max(dim=0)
+        indices = y_pred.squeeze().argmax(dim=0)
 
         x = prepare_image(x.squeeze(), mean, std)
         y_true = prepare_mask(y_true.squeeze())
         y_pred = prepare_mask(indices)
 
-        cv2.imshow('x', x)
-        cv2.imshow('y_true', y_true)
-        cv2.imshow('y_pred', y_pred)
-        cv2.waitKey()
+        plt.figure(figsize=(16, 5))
+
+        plt.subplot(131)
+        plt.imshow(x)
+        plt.axis('off')
+        plt.title('Input Image')
+
+        plt.subplot(132)
+        plt.imshow(y_true)
+        plt.axis('off')
+        plt.title('Ground Truth')
+
+        plt.subplot(133)
+        plt.imshow(y_pred)
+        plt.title('Prediction')
+        plt.axis('off')
+
+        plt.tight_layout()
+        plt.show()
 
 
 if __name__ == '__main__':
