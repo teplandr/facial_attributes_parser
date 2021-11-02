@@ -11,6 +11,7 @@ from facial_attributes_parser.transforms import (
     inference_transform, get_preprocessing, get_train_augmentations, get_valid_augmentations
 )
 from facial_attributes_parser.train_utilities import TrainEpoch, ValidEpoch
+from facial_attributes_parser.metrics import IoUMetric
 
 
 def main():
@@ -32,7 +33,7 @@ def main():
         activation="softmax2d"
     )
     loss = smp.losses.DiceLoss('multiclass', from_logits=False)
-    metrics = []
+    metrics = [IoUMetric()]
     optimizer = torch.optim.Adam(params=model.parameters(), lr=hparams["lr"])
 
     preprocessing_fn = smp.encoders.get_preprocessing_fn(encoder_name, encoder_weights)
@@ -80,16 +81,16 @@ def main():
 
     checkpoint_path = Path(hparams["checkpoint_path"])
     checkpoint_path.parent.mkdir(exist_ok=True, parents=True)
-    # max_score = 0.
+    max_score = 0.
     for i in range(hparams["num_epochs"]):
         print(f"\nEpoch: {i}")
         train_logs = train_epoch.run(train_loader)
         valid_logs = valid_epoch.run(valid_loader)
 
-        # if max_score < valid_logs["iou_score"]:
-        #     max_score = valid_logs["iou_score"]
-    torch.save(model, checkpoint_path)
-    print("Model saved!")
+        if max_score < valid_logs["iou_score"]:
+            max_score = valid_logs["iou_score"]
+        torch.save(model, checkpoint_path)
+        print("Model saved!")
 
 
 if __name__ == "__main__":

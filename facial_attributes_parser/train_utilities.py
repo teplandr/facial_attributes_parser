@@ -20,8 +20,6 @@ class Epoch:
     def _to_device(self):
         self.model.to(self.device)
         self.loss.to(self.device)
-        for metric in self.metrics:
-            metric.to(self.device)
 
     @staticmethod
     def _format_logs(logs):
@@ -55,7 +53,7 @@ class Epoch:
 
                 # update metrics logs
                 for metric_fn in self.metrics:
-                    metric_value = metric_fn(y_pred, y).cpu().detach().numpy()
+                    metric_value = metric_fn(y_pred, y)
                     metrics_meters[metric_fn.__name__].add(metric_value)
                 metrics_logs = {k: v.mean for k, v in metrics_meters.items()}
                 logs.update(metrics_logs)

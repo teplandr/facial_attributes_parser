@@ -35,6 +35,7 @@ def get_preprocessing(preprocessing_fn: Callable) -> albu.Compose:
     transform = [
         albu.Lambda(image=preprocessing_fn),
         albu.Lambda(image=to_tensor),
+        albu.Lambda(mask=lambda x, **kwargs: x.astype(np.long)),
     ]
     return albu.Compose(transform)
 

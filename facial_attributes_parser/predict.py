@@ -38,7 +38,7 @@ def main():
     parser.add_argument("--encoder_weights", type=str, help="Name of the SMP encoder weights.", required=True)
     parser.add_argument("--model_path", type=Path, help="Path to the pretrained model.", required=True)
     parser.add_argument("--data_root_path", type=Path, help="Path to the CelebAMask-HQ root.", required=True)
-    parser.add_argument("--subset_range", type=tuple, help="Range of samples to process.", default=(0.9999, 1.0))
+    parser.add_argument("--subset_range", type=float, nargs='+', help="Range of samples to process.", default=(0.9999, 1.0))
     args = parser.parse_args()
 
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
