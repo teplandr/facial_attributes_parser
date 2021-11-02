@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Tuple, Callable
 
 import cv2
+import numpy as np
 from torch.utils.data import Dataset
 
 
@@ -58,7 +59,7 @@ class CelebAMaskHQDataset(Dataset):
     def __len__(self) -> int:
         return len(self.image_paths)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[np.array, np.array]:
         image = cv2.imread(self.image_paths[index])
         masks = dict()
         for cls_index, mask_path in self.mask_paths[index].items():
