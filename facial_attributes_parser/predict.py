@@ -59,7 +59,7 @@ def main():
     loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
 
     for x, y_true in loader:
-        y_pred = model.predict(x)
+        y_pred = model.predict(x.to(device))
         indices = y_pred.squeeze().argmax(dim=0)
 
         x = prepare_image(x.squeeze(), mean, std)
